@@ -94,7 +94,20 @@ function GitAdapter.run_bootstrap()
   end
 
   local out = utils.job(utils.flatten({ git_cmd, "version" }))
-  bs.version_string = out[1] and out[1]:match("git version (%S+)") or nil
+  bs.version_string = nil
+
+  -- Check that 'out' exists and is an array table
+  if type(out) == "table" then
+    for _, line in ipairs(out) do
+      if type(line) == "string" then
+        local version = line:match("git version (%S+)")
+        if version then
+          bs.version_string = version
+          break -- Stop checking once a match is successfully found
+        end
+      end
+    end
+  end
 
   if not bs.version_string then
     return err("Could not get Git version!")
