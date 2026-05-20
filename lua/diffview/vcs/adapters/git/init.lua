@@ -2078,9 +2078,16 @@ function GitAdapter:show_untracked(opt)
 
   -- Check the user provided flag options
   if opt.dv_opt then
-    if type(opt.dv_opt.show_untracked) == "boolean" and not opt.dv_opt.show_untracked then
-      return false
+    if type(opt.dv_opt.show_untracked) == "boolean" then
+      return opt.dv_opt.show_untracked
     end
+  end
+
+  -- Non-git commands (e.g., yadm) have a working tree that may be very
+  -- large (e.g., $HOME), making `ls-files --others` impractical. Default
+  -- to false unless the user explicitly opts in via show_untracked.
+  if self:bin() ~= "git" then
+    return false
   end
 
   -- Fall back to checking git config
